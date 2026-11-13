@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TikTok Wedding LIVE</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#170d27;color:white;
+ font-family:Arial;text-align:center;
+}
+h2{margin:12px;color:#ffd5eb}
+canvas{display:block;width:100%;height:68vh}
+button{
+ padding:13px;margin:5px;border:0;border-radius:12px;
+ background:#e94b9b;color:white;font-weight:bold;
+}
+#info{padding:8px;color:#ffd6ed}
+</style>
+</head>
+<body>
+<h2>💍 TIKTOK WEDDING LIVE 💍</h2>
+<canvas id="game"></canvas>
+<div id="info">Guests: 0</div>
+<button onclick="demoGift()">🎁 Simulo 10 Coins</button>
+<button onclick="dancing=!dancing">💃 Dance ON/OFF</button>
+
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+let guests=[];
+let dancing=true;
+let angle=0;
+
+function resize(){
+ const d=window.devicePixelRatio||1;
+ canvas.width=innerWidth*d;
+ canvas.height=innerHeight*.68*d;
+ ctx.setTransform(d,0,0,d,0,0);
+}
+resize();
+window.addEventListener("resize",resize);
+
+function flower(x,y,s=1){
+ ctx.save();
+ ctx.translate(x,y);
+ ctx.scale(s,s);
+ for(let i=0;i<6;i++){
+  ctx.rotate(Math.PI/3);
+  ctx.fillStyle="#ff9fcf";
+  ctx.beginPath();
+  ctx.ellipse(0,-7,4,8,0,0,Math.PI*2);
+  ctx.fill();
+ }
+ ctx.fillStyle="#ffe28a";
+ ctx.beginPath();ctx.arc(0,0,4,0,7);ctx.fill();
+ ctx.restore();
+}
+
+function bride(x,y,b){
+ ctx.save();
+ ctx.translate(x,y+b);
+
+ // veil
+ ctx.fillStyle="#ffffff99";
+ ctx.beginPath();
+ ctx.moveTo(-10,-45);
+ ctx.quadraticCurveTo(-45,-20,-32,20);
+ ctx.lineTo(32,20);
+ ctx.quadraticCurveTo(45,-20,10,-45);
+ ctx.fill();
+
+ // hair
+ ctx.fillStyle="#542d25";
+ ctx.beginPath();ctx.arc(0,-40,12,0,7);ctx.fill();
+
+ // face
+ ctx.fillStyle="#f3c6a6";
+ ctx.beginPath();ctx.arc(0,-39,9,0,7);ctx.fill();
+
+ // crown
+ ctx.fillStyle="#f7d76c";
+ for(let i=-2;i<=2;i++){
+  ctx.beginPath();
+  ctx.arc(i*4,-51,2,0,7);ctx.fill();
+ }
+
+ // dress
+ ctx.fillStyle="#fffafc";
+ ctx.beginPath();
+ ctx.moveTo(-9,-29);
+ ctx.lineTo(-12,-7);
+ ctx.lineTo(-29,23);
+ ctx.quadraticCurveTo(0,32,29,23);
+ ctx.lineTo(12,-7);
+ ctx.lineTo(9,-29);
+ ctx.closePath();ctx.fill();
+
+ // dress decorations
+ ctx.strokeStyle="#e9b9d4";ctx.lineWidth=1.5;
+ ctx.beginPath();
+ ctx.moveTo(-8,-13);ctx.lineTo(8,-13);
+ ctx.moveTo(-12,4);ctx.lineTo(12,4);
+ ctx.stroke();
+
+ // bouquet
+ ctx.fillStyle="#568c60";
+ ctx.fillRect(12,-15,3,15);
+ flower(14,-19,.65);
+ flower(8,-16,.5);
+ flower(19,-16,.5);
+
+ ctx.restore();
+}
+
+function groom(x,y,b){
+ ctx.save();
+ ctx.translate(x,y+b);
+
+ // head
+ ctx.fillStyle="#f0c4a5";
+ ctx.beginPath();ctx.arc(0,-40,10,0,7);ctx.fill();
+
+ // hair
+ ctx.fillStyle="#34221c";
+ ctx.beginPath();ctx.arc(0,-46,10,Math.PI,Math.PI*2);ctx.fill();
+
+ // suit
+ ctx.fillStyle="#17233c";
+ ctx.beginPath();
+ ctx.moveTo(-10,-30);ctx.lineTo(-15,22);
+ ctx.lineTo(15,22);ctx.lineTo(10,-30);
+ ctx.closePath();ctx.fill();
+
+ // shirt
+ ctx.fillStyle="white";
+ ctx.beginPath();
+ ctx.moveTo(-5,-29);ctx.lineTo(0,-10);
+ ctx.lineTo(5,-29);ctx.fill();
+
+ // tie
+ ctx.fillStyle="#c93d72";
+ ctx.beginPath();
+ ctx.moveTo(0,-28);ctx.lineTo(-3,-18);
+ ctx.lineTo(0,-12);ctx.lineTo(3,-18);ctx.fill();
+
+ // arms
+ ctx.strokeStyle="#17233c";ctx.lineWidth=6;
+ ctx.beginPath();
+ ctx.moveTo(-10,-25);ctx.lineTo(-20,-5);
+ ctx.moveTo(10,-25);ctx.lineTo(20,-5);
+ ctx.stroke();
+
+ // flower on suit
+ flower(9,-22,.35);
+
+ ctx.restore();
+}
+
+function guest(x,y,g,b){
+ ctx.save();
+ ctx.translate(x,y+b);
+
+ // profile photo
+ ctx.save();
+ ctx.beginPath();ctx.arc(0,-43,13,0,7);ctx.clip();
+ if(g.image && g.image.complete && g.image.naturalWidth){
+  ctx.drawImage(g.image,-13,-56,26,26);
+ }else{
+  ctx.fillStyle="#e9a0ca";ctx.fillRect(-13,-56,26,26);
+  ctx.fillStyle="white";ctx.font="bold 11px Arial";
+  ctx.textAlign="center";
+  ctx.fillText((g.name||"?").slice(0,1).toUpperCase(),0,-39);
+ }
+ ctx.restore();
+
+ ctx.strokeStyle="#ffe1f1";ctx.lineWidth=2;
+ ctx.beginPath();ctx.arc(0,-43,13,0,7);ctx.stroke();
+
+ // body
+ ctx.fillStyle=g.color;
+ ctx.beginPath();ctx.roundRect(-9,-25,18,27,6);ctx.fill();
+
+ // arms
+ ctx.strokeStyle=g.color;ctx.lineWidth=4;
+ ctx.beginPath();
+ ctx.moveTo(-7,-18);ctx.lineTo(-17,-30);
+ ctx.moveTo(7,-18);ctx.lineTo(17,-30);
+ ctx.stroke();
+
+ // legs
+ ctx.strokeStyle="#f1c5a8";ctx.lineWidth=4;
+ ctx.beginPath();
+ ctx.moveTo(-4,2);ctx.lineTo(-8,13);
+ ctx.moveTo(4,2);ctx.lineTo(8,13);
+ ctx.stroke();
+
+ ctx.fillStyle="white";ctx.font="10px Arial";
+ ctx.textAlign="center";
+ ctx.fillText(g.name,0,27);
+ ctx.restore();
+}
+
+function addTikTokGuest(name,avatar){
+ let img=null;
+ if(avatar){
+  img=new Image();
+  img.crossOrigin="anonymous";
+  img.src=avatar;
+ }
+ guests.push({
+  name:name||"Guest",
+  image:img,
+  color:["#e94b9b","#4da9d8","#e5a83b","#8b65dc","#54a77b"][guests.length%5]
+ });
+ document.getElementById("info").textContent="Guests: "+guests.length;
+}
+
+// This function will receive gifts from the TikTok connection.
+window.handleTikTokGift=function(event){
+ if(Number(event.coins)>=10){
+  addTikTokGuest(event.username,event.avatar);
+ }
+};
+
+// Demo button
+function demoGift(){
+ addTikTokGuest("TikTok Guest "+(guests.length+1),"");
+}
+
+function draw(){
+ const w=canvas.clientWidth,h=canvas.clientHeight;
+ ctx.clearRect(0,0,w,h);
+
+ // background
+ const grad=ctx.createLinearGradient(0,0,0,h);
+ grad.addColorStop(0,"#28123f");
+ grad.addColorStop(1,"#100b25");
+ ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+
+ // stars
+ for(let i=0;i<35;i++){
+  ctx.fillStyle="#ffe6f788";
+  ctx.beginPath();ctx.arc((i*83)%w,(i*47)%h,1.5,0,7);ctx.fill();
+ }
+
+ // wedding arch
+ ctx.strokeStyle="#f3c4dc";ctx.lineWidth=7;
+ ctx.beginPath();
+ ctx.arc(w/2,h*.36,Math.min(w*.32,125),Math.PI,0);
+ ctx.stroke();
+
+ // flowers on arch
+ for(let i=0;i<11;i++){
+  let a=Math.PI+(Math.PI*i/10);
+  flower(w/2+Math.cos(a)*Math.min(w*.32,125),
+  h*.36+Math.sin(a)*Math.min(w*.32,125),.7);
+ }
+
+ // floor
+ ctx.fillStyle="#59326f";
+ ctx.beginPath();
+ ctx.ellipse(w/2,h*.68,w*.46,h*.21,0,0,7);
+ ctx.fill();
+
+ ctx.strokeStyle="#f8bce0";ctx.lineWidth=3;
+ ctx.beginPath();
+ ctx.ellipse(w/2,h*.68,w*.46,h*.21,0,0,7);
+ ctx.stroke();
+
+ // bride and groom
+ let jump=dancing?Math.sin(angle*3)*4:0;
+ bride(w/2-32,h*.43,jump);
+ groom(w/2+32,h*.43,-jump);
+
+ // guests around the couple
+ guests.forEach((g,i)=>{
+  let a=(Math.PI*2*i/Math.max(guests.length,1))+angle*.25;
+  let x=w/2+Math.cos(a)*w*.37;
+  let y=h*.68+Math.sin(a)*h*.16;
+  let bounce=dancing?Math.sin(angle*4+i)*5:0;
+  guest(x,y,g,bounce);
+ });
+
+ ctx.fillStyle="#ffe4f3";
+ ctx.font="bold 18px Arial";
+ ctx.textAlign="center";
+ ctx.fillText("✨ OUR WEDDING ✨",w/2,27);
+
+ angle+=.025;
+ requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
